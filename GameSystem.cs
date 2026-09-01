@@ -51,8 +51,6 @@ public class GameSystem : MonoBehaviour
         RetrieveTargetsCount();
         
 #if UNITY_EDITOR
-        //in the editor we find which level we are currently in. Inefficient but since any level can be opened in the
-        //editor we can't assume where we start
 
         string currentScene = SceneManager.GetActiveScene().path;
         for (int i = 0; i < GameDatabase.Instance.episodes.Length && s_CurrentEpisode < 0; ++i)
@@ -69,7 +67,6 @@ public class GameSystem : MonoBehaviour
         }
         
 #else
-        //in the final game, we init everything to episode & level 0, as we can't start from somewhere else
         if(s_CurrentEpisode < 0 || s_CurrentLevel < 0)
         {
             s_CurrentEpisode = 0;
@@ -109,8 +106,7 @@ public class GameSystem : MonoBehaviour
     public void NextLevel()
     {
 #if UNITY_EDITOR
-        //in editor if we didn't found the current episode or level, mean we are playing a test scene not part of the
-        //game database list, so calling next level is the same as restarting level
+
         if (s_CurrentEpisode < 0 || s_CurrentLevel < 0)
         {
             var asyncOp = EditorSceneManager.LoadSceneAsyncInPlayMode(EditorSceneManager.GetActiveScene().path, new LoadSceneParameters(LoadSceneMode.Single));
@@ -142,24 +138,17 @@ public class GameSystem : MonoBehaviour
         var targets = Resources.FindObjectsOfTypeAll<Target>();
 
         int count = 0;
-        
-        //The spawner create their target and disable them before that function run, so retrieving all Target will also
-        //retrieve the one the spawner will use.
+
         foreach (var t in targets)
         {
 #if UNITY_EDITOR
 
-            //in editor we have to check if the target returned is not a prefab, since Resouces.FindObjectofTypeAll return
-            //also loaded prefab. In the player no need as there is no prefab loaded.
-
-            //if the scene isn't valid it's a prefab. 
             if (!t.gameObject.scene.IsValid())
             {
                 continue;
             }
 #endif
-            
-            //we only count target with positive point, as negative point you have to avoid destroying them
+
             if (t.pointValue > 0)
                 count += 1;
         }
@@ -184,8 +173,7 @@ public class GameSystem : MonoBehaviour
 
         Transform playerTransform = Controller.Instance.transform;
         
-        
-        //UI Update
+
         MinimapUI.Instance.UpdateForPlayerTransform(playerTransform);
        
         if(FullscreenMap.Instance.gameObject.activeSelf)
