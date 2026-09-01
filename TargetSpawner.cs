@@ -34,7 +34,6 @@ public class TargetSpawner : MonoBehaviour
     Queue<SpawnQueueElement> m_SpawnQueue;
     List<SpawnQueueElement> m_ActiveElements;
     
-    // Start is called before the first frame update
     void Awake()
     {
         path.Init(transform);
@@ -79,7 +78,6 @@ public class TargetSpawner : MonoBehaviour
         m_ActiveElements.Add(e);
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (m_SpawnQueue.Count > 0)
@@ -98,7 +96,6 @@ public class TargetSpawner : MonoBehaviour
         {
             var currentElem = m_ActiveElements[i];
             
-            //the target was already destroyed no need to update its position.
             if(currentElem.target.Destroyed)
                 continue;
 
@@ -117,8 +114,6 @@ public class TargetSpawner : MonoBehaviour
         }
     }
 }
-
-//====================
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(TargetSpawner))]
