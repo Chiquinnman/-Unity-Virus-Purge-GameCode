@@ -17,7 +17,6 @@ public class AmmoInventoryEntry
 
 public class Controller : MonoBehaviour
 {
-    //Urg that's ugly, maybe find a better way
     public static Controller Instance { get; protected set; }
 
     public Camera MainCamera;
@@ -28,7 +27,6 @@ public class Controller : MonoBehaviour
 
     public Weapon[] startingWeapons;
 
-    //this is only use at start, allow to grant ammo in the inspector. m_AmmoInventory is used during gameplay
     public AmmoInventoryEntry[] startingAmmo;
 
     [Header("Control Settings")]
@@ -86,7 +84,6 @@ public class Controller : MonoBehaviour
             PickupWeapon(startingWeapons[i]);
         }
 
-        // 시작 탄약을 코드에서 150으로 강제 지정
         for (int i = 0; i < startingAmmo.Length; ++i)
         {
             startingAmmo[i].amount = 150;
@@ -121,9 +118,6 @@ public class Controller : MonoBehaviour
         bool wasGrounded = m_Grounded;
         bool loosedGrounding = false;
 
-        //we define our own grounded and not use the Character controller one as the character controller can flicker
-        //between grounded/not grounded on small step and the like. So we actually make the controller "not grounded" only
-        //if the character controller reported not being grounded for at least .5 second;
         if (!m_CharacterController.isGrounded)
         {
             if (m_Grounded)
@@ -146,7 +140,6 @@ public class Controller : MonoBehaviour
         Vector3 move = Vector3.zero;
         if (!m_IsPaused && !LockControl)
         {
-            // Jump (we do it first as 
             if (m_Grounded && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 m_VerticalSpeed = JumpSpeed;
@@ -163,7 +156,6 @@ public class Controller : MonoBehaviour
                 m_SpeedAtJump = actualSpeed;
             }
 
-            // Move around with WASD
             move = Vector3.zero;
             if (Keyboard.current.wKey.isPressed) move.z += 1;
             if (Keyboard.current.sKey.isPressed) move.z -= 1;
@@ -180,7 +172,6 @@ public class Controller : MonoBehaviour
             move = transform.TransformDirection(move);
             m_CharacterController.Move(move);
 
-            // Turn player
             Vector2 mouseDelta = Mouse.current.delta.ReadValue();
 
             float turnPlayer = mouseDelta.x * MouseSensitivity * Time.deltaTime;
@@ -193,7 +184,6 @@ public class Controller : MonoBehaviour
             currentAngles.y = m_HorizontalAngle;
             transform.localEulerAngles = currentAngles;
 
-            // Camera look up/down
             var turnCam = -mouseDelta.y * MouseSensitivity * Time.deltaTime;
             m_VerticalAngle = Mathf.Clamp(turnCam + m_VerticalAngle, -89.0f, 89.0f);
             currentAngles = CameraPosition.transform.localEulerAngles;
@@ -217,7 +207,6 @@ public class Controller : MonoBehaviour
                 ChangeWeapon(m_CurrentWeapon + 1);
             }
 
-            //Key input to change weapon
 
             if (Keyboard.current.digit1Key.wasPressedThisFrame) ChangeWeapon(0);
             if (Keyboard.current.digit2Key.wasPressedThisFrame) ChangeWeapon(1);
@@ -231,10 +220,9 @@ public class Controller : MonoBehaviour
             if (Keyboard.current.digit0Key.wasPressedThisFrame) ChangeWeapon(9);
         }
 
-        // Fall down / gravity
         m_VerticalSpeed = m_VerticalSpeed - 10.0f * Time.deltaTime;
         if (m_VerticalSpeed < -10.0f)
-            m_VerticalSpeed = -10.0f; // max fall speed
+            m_VerticalSpeed = -10.0f; 
         var verticalMove = new Vector3(0, m_VerticalSpeed * Time.deltaTime, 0);
         var flag = m_CharacterController.Move(verticalMove);
         if ((flag & CollisionFlags.Below) != 0)
@@ -255,9 +243,8 @@ public class Controller : MonoBehaviour
 
     void PickupWeapon(Weapon prefab)
     {
-        //TODO : maybe find a better way than comparing name...
         if (m_Weapons.Exists(weapon => weapon.name == prefab.name))
-        {//if we already have that weapon, grant a clip size of the ammo type instead
+        {
             ChangeAmmo(prefab.ammoType, prefab.clipSize);
         }
         else
@@ -312,7 +299,7 @@ public class Controller : MonoBehaviour
         if (m_Weapons[m_CurrentWeapon].ammoType == ammoType)
         {
             if (previous == 0 && amount > 0)
-            {//we just grabbed ammo for a weapon that add non left, so it's disabled right now. Reselect it.
+            {
                 m_Weapons[m_CurrentWeapon].Selected();
             }
 
