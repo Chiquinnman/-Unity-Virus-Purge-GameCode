@@ -12,7 +12,6 @@ public class Projectile : MonoBehaviour
     public float damage = 10.0f;
     public AudioClip DestroyedSound;
     
-    //TODO : maybe pool that somewhere to not have to create one for each projectile.
     public GameObject PrefabOnDestruction;
 
     Weapon m_Owner;
