@@ -126,8 +126,6 @@ public class Weapon : MonoBehaviour
 
         if (projectilePrefab != null)
         {
-            //a minimum of 4 is useful for weapon that have a clip size of 1 and where you can throw a second
-            //or more before the previous one was recycled/exploded.
             int size = Mathf.Max(4, clipSize) * advancedSettings.projectilePerShot;
             for (int i = 0; i < size; ++i)
             {
@@ -183,8 +181,7 @@ public class Weapon : MonoBehaviour
 
         if (m_ClipContent == 0 && ammoRemaining != 0)
         { 
-            //this can only happen if the weapon ammo reserve was empty and we picked some since then. So directly
-            //reload the clip when wepaon is selected          
+     
             int chargeInClip = Mathf.Min(ammoRemaining, clipSize);
             m_ClipContent += chargeInClip;        
             if(AmmoDisplay)
@@ -210,7 +207,6 @@ public class Weapon : MonoBehaviour
         
         WeaponInfoUI.Instance.UpdateClipInfo(this);
 
-        //the state will only change next frame, so we set it right now.
         m_CurrentState = WeaponState.Firing;
         
         m_Animator.SetTrigger("fire");
@@ -237,7 +233,6 @@ public class Weapon : MonoBehaviour
     void RaycastShot()
     {
 
-        //compute the ratio of our spread angle over the fov to know in viewport space what is the possible offset from center
         float spreadRatio = advancedSettings.spreadAngle / Controller.Instance.MainCamera.fieldOfView;
 
         Vector2 spread = spreadRatio * Random.insideUnitCircle;
@@ -251,11 +246,9 @@ public class Weapon : MonoBehaviour
             Renderer renderer = hit.collider.GetComponentInChildren<Renderer>();
             ImpactManager.Instance.PlayImpact(hit.point, hit.normal, renderer == null ? null : renderer.sharedMaterial);
 
-            //if too close, the trail effect would look weird if it arced to hit the wall, so only correct it if far
             if (hit.distance > 5.0f)
                 hitPosition = hit.point;
-            
-            //this is a target
+
             if (hit.collider.gameObject.layer == 10)
             {
                 Target target = hit.collider.gameObject.GetComponent<Target>();
@@ -296,7 +289,6 @@ public class Weapon : MonoBehaviour
         }
     }
 
-    //For optimization, when a projectile is "destroyed" it is instead disabled and return to the weapon for reuse.
     public void ReturnProjecticle(Projectile p)
     {
         m_ProjectilePool.Enqueue(p);
@@ -311,7 +303,6 @@ public class Weapon : MonoBehaviour
 
         if (remainingBullet == 0)
         {
-            //No more bullet, so we disable the gun so it's displayed on empty (useful e.g. for  grenade)
             if(DisabledOnEmpty)
                 gameObject.SetActive(false);
             return;
@@ -325,8 +316,7 @@ public class Weapon : MonoBehaviour
         }
 
         int chargeInClip = Mathf.Min(remainingBullet, clipSize - m_ClipContent);
-     
-        //the state will only change next frame, so we set it right now.
+
         m_CurrentState = WeaponState.Reloading;
         
         m_ClipContent += chargeInClip;
@@ -391,7 +381,7 @@ public class Weapon : MonoBehaviour
             m_CurrentState = newState;
             
             if (oldState == WeaponState.Firing)
-            {//we just finished firing, so check if we need to auto reload
+            {
                 if(m_ClipContent == 0)
                     Reload();
             }
@@ -411,14 +401,7 @@ public class Weapon : MonoBehaviour
                 Fire();
         }
     }
-    
-    /// <summary>
-    /// This will compute the corrected position of the muzzle flash in world space. Since the weapon camera use a
-    /// different FOV than the main camera, using the muzzle spot to spawn thing rendered by the main camera will appear
-    /// disconnected from the muzzle flash. So this convert the muzzle post from
-    /// world -> view weapon -> clip weapon -> inverse clip main cam -> inverse view cam -> corrected world pos
-    /// </summary>
-    /// <returns></returns>
+
     public Vector3 GetCorrectedMuzzlePlace()
     {
         Vector3 position = EndPoint.position;
@@ -459,7 +442,6 @@ public class AmmoTypeDrawer : PropertyDrawer
             int currentID = property.intValue;
             int currentIdx = -1;
 
-            //this is pretty ineffective, maybe find a way to cache that if prove to take too much time
             string[] names = new string[ammoDB.entries.Length];
             for (int i = 0; i < ammoDB.entries.Length; ++i)
             {
